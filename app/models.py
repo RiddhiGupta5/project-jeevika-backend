@@ -18,9 +18,41 @@ class CustomUser(models.Model):
         self.password = str(m.digest())
         super().save(*args, **kwargs)
 
+class Organization(models.Model):
+    org_name = models.CharField(unique=True, max_length=80)
+    address = models.TextField()
+    areas_catered = models.TextField()
+    description = models.TextField(null=True)
+    email = models.EmailField()
+    phone_no = models.CharField(max_length=10)
+    web_link = models.URLField(null=True)
+
 
 class CustomToken(models.Model):
     token = models.CharField(max_length=500)
     object_id = models.IntegerField()
     user_type = models.IntegerField()
+    date_time = models.DateTimeField(auto_now_add=True)
+
+class Donation(models.Model):
+    item_name = models.CharField(max_length=50)
+    quantity = models.CharField(max_length=20)
+    description = models.TextField()
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    is_accepted = models.BooleanField(default=False)
+    org_id = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    date_time = models.DateTimeField(auto_now_add=True)
+
+class Message(models.Model):
+    donation_id = models.ForeignKey(Donation, on_delete=models.CASCADE)
+    description = models.TextField()
+    date_time = models.DateTimeField(auto_now_add=True)
+
+class HelpProgram(models.Model):
+    org_id = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    prg_name = models.CharField(max_length=50)
+    description = models.TextField()
+    aid_provided = models.CharField(max_length=500)
+    city = models.CharField(max_length=100)
+    address = models.TextField()
     date_time = models.DateTimeField(auto_now_add=True)

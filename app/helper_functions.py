@@ -4,7 +4,7 @@ import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-from .models import CustomUser, CustomToken
+from .models import CustomUser, CustomToken, Organization
 
 def get_object(token):
     try:
@@ -15,6 +15,7 @@ def get_object(token):
             required_object = CustomUser.objects.get(id=payload['id'])
         else:
             # Organisation
+            required_object = Organization.objects.get(id=payload['id'])
             pass
         token = CustomToken.objects.get(object_id=required_object.id, user_type=payload['user_type'])
         return required_object
