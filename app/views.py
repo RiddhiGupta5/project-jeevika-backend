@@ -36,7 +36,8 @@ class UserSignupView(APIView):
                 email=user_data['email'], 
                 password=user_data['password'], 
                 username=user_data['username'], 
-                phone_no=user_data['phone_no'])
+                phone_no=user_data['phone_no'],
+                address=user_data['address'])
 
             user = authenticate(email=user_data['email'], password=user_data['password'])
             token, _ = Token.objects.get_or_create(user=user)
@@ -65,6 +66,7 @@ class UserLoginView(APIView):
                     "email":user.email,
                     "username":user.username,
                     "phone_no":user.phone_no,
+                    "address":user.address,
                     "token":token.key
             }})
 
@@ -80,7 +82,8 @@ class UserLogoutView(APIView):
                 "id": user.id,
                 "email":user.email,
                 "username":user.username,
-                "phone_no":user.phone_no
+                "phone_no":user.phone_no,
+                "address":user.address
             }}
         request.user.auth_token.delete()
         return Response(response, status=status.HTTP_200_OK)

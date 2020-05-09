@@ -4,7 +4,7 @@ from app.models import User
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'username', 'phone_no', 'password')
+        fields = ('email', 'username', 'phone_no', 'address', 'password')
 
 class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
