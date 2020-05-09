@@ -1,4 +1,4 @@
-# social
+# Crack Corona Hackathon
 
 Docs: https://documenter.getpostman.com/view/7638824/Szmb5K42
-Base URL: https://social-app-v1-backend.herokuapp.com/
+Base URL: https://crack-corona-hack-backend.herokuapp.com/
