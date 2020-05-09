@@ -1,25 +1,26 @@
+import hashlib
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
-
-from .managers import CustomUserManager
 
 
-class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(_('email address'), unique=True)
+class CustomUser(models.Model):
+    email = models.EmailField(unique=True)
     username = models.CharField(max_length=50)
     phone_no = models.CharField(max_length=10)
     address = models.TextField()
-    is_staff = models.BooleanField(default=False)       # Field necessary for a django user
-    is_active = models.BooleanField(default=True)       # Field necessary for a django user
-    is_superuser = models.BooleanField(default=False)   # Field necessary for a django user
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'phone_no']
-
-    objects = CustomUserManager()
+    password = models.CharField(max_length=1000)
 
     def __str__(self):
-        return self.email
+        return self.email + '|' + str(id)
+
+    def save(self, *args, **kwargs):
+        m = hashlib.md5()     
+        m.update(self.password.encode("utf-8")) 
+        self.password = str(m.digest())
+        super().save(*args, **kwargs)
+
+
+class CustomToken(models.Model):
+    token = models.CharField(max_length=500)
+    object_id = models.IntegerField()
+    user_type = models.IntegerField()
+    date_time = models.DateTimeField(auto_now_add=True)
