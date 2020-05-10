@@ -9,87 +9,75 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Organization, CustomToken
-from .serializers import (Organization)
+from .serializers import OrganizationSerializer
 from .helper_functions import get_object, get_token
 
-
-# TODO: 1. Change this to org
-
-
-
-# Ping Server
-class PingView(APIView):
-
-    def get(self, request):
-        return Response({"message":"OK"}, status=status.HTTP_200_OK)
-
-# Sign up a new user View
-class UserSignupView(APIView):
+# Register Organization
+class OrganizationRegisterView(APIView):
 
     # Sigup user (create new object)
     def post(self, request):
 
-        user_data = {}
-        user_data['email'] = request.data.get("email", None)
-        user_data['username'] = request.data.get("username", None)
-        user_data['phone_no'] = request.data.get("phone_no", None)
-        user_data['address'] = request.data.get("address", None)
-        user_data['password'] = request.data.get("password", None)
-        if len(user_data['password'])<6:
+        org_data = dict(request.data)
+
+        if len(org_data['password'])<6:
             return Response({"Invalid Password"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = UserSignupSerializer(data=user_data)       
+        serializer = OrganizationSerializer(data=org_data)       
 
         if serializer.is_valid():
             serializer.save()
 
-            user = CustomUser.objects.get(email=user_data['email'])
-            token = get_token(user.id, 0)
-            user_data['token'] = token
-            del user_data['password']
+            org = Organization.objects.get(org_name=org_data['org_name'])
+            token = get_token(org.id, 1)
+            org_data['token'] = token
+            del org_data['password']
             try:
-                usertoken = CustomToken.objects.get(object_id=user.id, user_type=0)
-                return Response({"message":"User Already Logged in", "User":user_data}, status=status.HTTP_400_BAD_REQUEST)
+                orgtoken = CustomToken.objects.get(object_id=org.id, user_type=1)
+                return Response({"message":"Organization Already Logged in", "Organization":org_data}, status=status.HTTP_400_BAD_REQUEST)
             except CustomToken.DoesNotExist:
                 CustomToken.objects.create(
-                    user_type=0,
-                    object_id=user.id,
+                    user_type=1,
+                    object_id=org.id,
                     token=token
                 )
-                return Response({"message":"User Signed up successfully", "User":user_data}, status=status.HTTP_201_CREATED)
+                return Response({"message":"Organization Registered successfully", "Organization":org_data}, status=status.HTTP_201_CREATED)
         else:
             return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # View for user login
-class UserLoginView(APIView):
+class OrganizationLoginView(APIView):
     
     def post(self, request):
         req_data = request.data
         try:
-            user = CustomUser.objects.get(email=req_data['email'])
-        except CustomUser.DoesNotExist:
-            return Response({"message":"Invalid Email"}, status=status.HTTP_400_BAD_REQUEST)
+            org = Organization.objects.get(org_name=req_data['org_name'])
+        except Organization.DoesNotExist:
+            return Response({"message":"Invalid Organization Name"}, status=status.HTTP_400_BAD_REQUEST)
         
         m = hashlib.md5()     
         m.update(req_data['password'].encode("utf-8"))
-        if user.password == str(m.digest()):
-            token = get_token(user.id, 0)
+        if org.password == str(m.digest()):
+            token = get_token(org.id, 1)
             try:
-                usertoken = CustomToken.objects.get(object_id=user.id, user_type=0)
-                token = usertoken.token
+                orgtoken = CustomToken.objects.get(object_id=org.id, user_type=1)
+                token = orgtoken.token
             except CustomToken.DoesNotExist:
                 CustomToken.objects.create(
-                    user_type=0,
-                    object_id=user.id,
+                    user_type=1,
+                    object_id=org.id,
                     token=token
                 )
-            return Response({"message":"User Logged in", 
-                "User":{
-                    "id":user.id,
-                    "email":user.email,
-                    "username":user.username,
-                    "phone_no":user.phone_no,
-                    "address":user.address,
+            return Response({"message":"Organization Logged in", 
+                "Organization":{
+                    "id":org.id,
+                    "email":org.email,
+                    "org_name":org.org_name,
+                    "phone_no":org.phone_no,
+                    "address":org.address,
+                    "areas_catered":org.areas_catered,
+                    "description":org.description,
+                    "web_link":org.web_link, 
                     "token":token
                 }
             })
@@ -98,7 +86,7 @@ class UserLoginView(APIView):
         
 
 # Signout new user
-class UserLogoutView(APIView):
+class OrganizationLogoutView(APIView):
 
     def get(self, request, format=None):
 
@@ -107,22 +95,48 @@ class UserLogoutView(APIView):
         if token is None or token=="":
             return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
         
-        user = get_object(token)
-        if user is None:
-            return Response({"message":"User Already Logged Out"}, status=status.HTTP_403_FORBIDDEN)
+        org = get_object(token)
+        if org is None:
+            return Response({"message":"Organization Already Logged Out"}, status=status.HTTP_403_FORBIDDEN)
 
         response = {
-            "message":"User logged out", 
+            "message":"Organization logged out", 
             "Details":{
-                "id": user.id,
-                "email":user.email,
-                "username":user.username,
-                "phone_no":user.phone_no,
-                "address":user.address
+                "id":org.id,
+                "email":org.email,
+                "org_name":org.org_name,
+                "phone_no":org.phone_no,
+                "address":org.address,
+                "areas_catered":org.areas_catered,
+                "description":org.description,
+                "web_link":org.web_link
             }}
         
-        usertoken = CustomToken.objects.get(object_id=user.id, user_type=0)
+        usertoken = CustomToken.objects.get(object_id=org.id, user_type=1)
         usertoken.delete()
         return Response(response, status=status.HTTP_200_OK)
 
 
+class OrganizationDetailsView(APIView):
+
+    def get(self, request):
+        token = request.headers.get('Authorization', None)
+        if token is None or token=="":
+            return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
+        
+        org = get_object(token)
+        if org is None:
+            return Response({"message":"Organization Not Found"}, status=status.HTTP_403_FORBIDDEN)
+        response = {
+            "message":"Organization details", 
+            "Organization":{
+                "id":org.id,
+                "email":org.email,
+                "org_name":org.org_name,
+                "phone_no":org.phone_no,
+                "address":org.address,
+                "areas_catered":org.areas_catered,
+                "description":org.description,
+                "web_link":org.web_link
+            }}
+        return Response(response, status=status.HTTP_200_OK)

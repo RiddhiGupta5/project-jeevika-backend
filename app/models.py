@@ -26,6 +26,13 @@ class Organization(models.Model):
     email = models.EmailField()
     phone_no = models.CharField(max_length=10)
     web_link = models.URLField(null=True)
+    password = models.CharField(max_length=1000)
+
+    def save(self, *args, **kwargs):
+        m = hashlib.md5()     
+        m.update(self.password.encode("utf-8")) 
+        self.password = str(m.digest())
+        super().save(*args, **kwargs)
 
 
 class CustomToken(models.Model):

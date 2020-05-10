@@ -32,3 +32,13 @@ def get_token(object_id, user_type):
     encoded_jwt = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256')
     result = (encoded_jwt.decode("utf-8"))
     return result
+
+def check_user(token):
+    try:
+        token = token.split(" ")
+        payload = jwt.decode(token[1], os.getenv('JWT_SECRET'), algorithms=['HS256'])
+        return payload['user_type']
+    except Exception as error:
+        print(error)
+        return None
+    

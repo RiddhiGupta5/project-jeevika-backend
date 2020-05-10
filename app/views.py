@@ -3,14 +3,15 @@ from datetime import datetime
 
 from django.db.models import Q
 from django.shortcuts import render
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CustomUser, CustomToken
-from .serializers import (UserLoginSerializer, UserSignupSerializer,)
 from .helper_functions import get_object, get_token
+from .models import CustomToken, CustomUser
+from .orgs_auth_views import (OrganizationDetailsView, OrganizationLoginView,
+                              OrganizationLogoutView, OrganizationRegisterView)
+from .serializers import UserLoginSerializer, UserSignupSerializer
 
 
 # Ping Server
@@ -121,4 +122,24 @@ class UserLogoutView(APIView):
         usertoken.delete()
         return Response(response, status=status.HTTP_200_OK)
 
+class UserDetailsView(APIView):
+
+    def get(self, request):
+        token = request.headers.get('Authorization', None)
+        if token is None or token=="":
+            return Response({"message":"Authorization credentials missing"}, status=status.HTTP_403_FORBIDDEN)
+        
+        user = get_object(token)
+        if user is None:
+            return Response({"message":"User Not Found"}, status=status.HTTP_403_FORBIDDEN)
+        response = {
+            "message":"User details", 
+            "User":{
+                "id": user.id,
+                "email":user.email,
+                "username":user.username,
+                "phone_no":user.phone_no,
+                "address":user.address
+            }}
+        return Response(response, status=status.HTTP_200_OK)
 
