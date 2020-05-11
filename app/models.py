@@ -49,17 +49,13 @@ class Donation(models.Model):
     is_accepted = models.BooleanField(default=False)
     org_id = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date_time = models.DateTimeField(auto_now_add=True)
-
-class Message(models.Model):
-    donation_id = models.ForeignKey(Donation, on_delete=models.CASCADE)
-    description = models.TextField()
-    date_time = models.DateTimeField(auto_now_add=True)
+    message = models.TextField(null=True)
 
 class HelpProgram(models.Model):
     org_id = models.ForeignKey(Organization, on_delete=models.CASCADE)
     prg_name = models.CharField(max_length=50)
-    description = models.TextField()
+    description = models.TextField(null=True)
     aid_provided = models.CharField(max_length=500)
     city = models.CharField(max_length=100)
-    address = models.TextField()
+    address = models.TextField(null=True)
     date_time = models.DateTimeField(auto_now_add=True)
