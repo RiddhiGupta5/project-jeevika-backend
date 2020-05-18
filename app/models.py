@@ -48,6 +48,7 @@ class Donation(models.Model):
     user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_accepted = models.BooleanField(default=False)
     org_id = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    location = models.TextField()
     date_time = models.DateTimeField(auto_now_add=True)
     message = models.TextField(null=True)
 

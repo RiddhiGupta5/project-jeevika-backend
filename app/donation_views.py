@@ -30,6 +30,7 @@ class DonationView(APIView):
 
         data = dict(request.data)
         data['user_id'] = user.id
+        data['location'] = user.address
         serializer = DonationSerializer(data = data)
 
         if serializer.is_valid():
