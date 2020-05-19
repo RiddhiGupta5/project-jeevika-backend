@@ -60,3 +60,7 @@ class HelpProgram(models.Model):
     city = models.CharField(max_length=100)
     address = models.TextField(null=True)
     date_time = models.DateTimeField(auto_now_add=True)
+
+class PhoneNumbers(models.Model):
+    phone_no = models.CharField(max_length=10, unique=True)
+    date_time = models.DateTimeField(auto_now_add=True)

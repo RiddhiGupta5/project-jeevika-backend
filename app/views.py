@@ -10,10 +10,10 @@ from rest_framework.views import APIView
 from .donation_views import AllDontaionView, DonationView, MessagesView, AccpetDonationView
 from .help_prg_views import AllHelpProgramView, HelpProgramView
 from .helper_functions import get_object, get_token
-from .models import CustomToken, CustomUser
+from .models import CustomToken, CustomUser, PhoneNumbers
 from .orgs_auth_views import (OrganizationDetailsView, OrganizationLoginView,
                               OrganizationLogoutView, OrganizationRegisterView)
-from .serializers import UserLoginSerializer, UserSignupSerializer
+from .serializers import UserLoginSerializer, UserSignupSerializer, PhoneNumbersSerializer
 
 
 # Ping Server
@@ -42,6 +42,15 @@ class UserSignupView(APIView):
             serializer.save()
 
             user = CustomUser.objects.get(email=user_data['email'])
+
+            # Storing phone number
+            phone_no = {
+                'phone_no':user.phone_no
+            }
+            phone_serializer = PhoneNumbersSerializer(data=phone_no)
+            if phone_serializer.is_valid():
+                phone_serializer.save()
+
             token = get_token(user.id, 0)
             user_data['token'] = token
             del user_data['password']
@@ -144,3 +153,18 @@ class UserDetailsView(APIView):
                 "address":user.address
             }}
         return Response(response, status=status.HTTP_200_OK)
+
+class RegisterPhoneNo(APIView):
+
+    def post(self, request):
+        phone_no = request.data.get('phone_no', None)
+        if not phone_no or len(phone_no)!=10:
+            return Response({"message":"Invalid Phone Number"}, status=status.HTTP_400_BAD_REQUEST)
+
+        phone_serializer = PhoneNumbersSerializer(data=request.data)
+        if phone_serializer.is_valid():
+            phone_serializer.save()
+            return Response({"message": "Phone Number registered"}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message':"Phone number already registered"}, status=status.HTTP_200_OK)
+

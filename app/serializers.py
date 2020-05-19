@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (CustomToken, CustomUser, Donation, HelpProgram, 
-                     Organization)
+                     Organization, PhoneNumbers)
 
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,4 +25,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class DonationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Donation
+        fields = "__all__"
+
+class PhoneNumbersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhoneNumbers
         fields = "__all__"

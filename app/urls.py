@@ -6,7 +6,7 @@ from .views import (AllDontaionView, AllHelpProgramView, DonationView,
                     OrganizationLoginView, OrganizationLogoutView,
                     OrganizationRegisterView, PingView, UserDetailsView,
                     UserLoginView, UserLogoutView, UserSignupView, 
-                    AccpetDonationView)
+                    AccpetDonationView, RegisterPhoneNo)
 
 router = routers.DefaultRouter()
 
@@ -29,4 +29,5 @@ urlpatterns = [
     path('all_help_prg/', AllHelpProgramView.as_view()),
     path('view_messages/', MessagesView.as_view()),
     path('accept_donation/', AccpetDonationView.as_view()),
+    path('register_phone_no/', RegisterPhoneNo.as_view())
 ]

@@ -1,6 +1,7 @@
 import jwt
 import os
 import datetime
+import requests
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -41,4 +42,23 @@ def check_user(token):
     except Exception as error:
         print(error)
         return None
+    
+def sendSMS(phone_number, message):
+    url = "https://www.fast2sms.com/dev/bulk"
+
+    querystring = {
+        "authorization":os.getenv('SMS_API_KEY'),
+        "sender_id":"FSTSMS",
+        "message":message,
+        "language":"english",
+        "route":"p",
+        "numbers":','.join(phone_number)
+    }
+
+    headers = {
+        'cache-control': "no-cache"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    print(response.text)
     

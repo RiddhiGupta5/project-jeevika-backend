@@ -9,9 +9,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import HelpProgram, CustomToken, Organization
+from .models import HelpProgram, CustomToken, Organization, PhoneNumbers
 from .serializers import HelpProgramSerializer
-from .helper_functions import get_object, check_user
+from .helper_functions import get_object, check_user, sendSMS
 
 class HelpProgramView(APIView):
 
@@ -35,6 +35,14 @@ class HelpProgramView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+            phone_numbers = PhoneNumbers.objects.all()
+            phone_numbers = [num.phone_no for num in phone_numbers]
+            message = org.org_name + ' is organizing ' + serializer.data['prg_name'] + '\n' \
+                + 'Aid Provided: ' + serializer.data['aid_provided'] + '\n'\
+                + 'Description: ' + serializer.data['description'] + '\n'\
+                + 'Address: ' + serializer.data['address'] + '\n'
+            sendSMS(phone_numbers, message)
+            print(message)
             return Response({"message":serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
